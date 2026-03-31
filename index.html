@@ -3,11 +3,10 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Premiere Timeline Asset Manager - Data Seeder</title>
+		<title>Premiere Timeline Asset Manager - Global Sync</title>
 		<script src="https://cdn.tailwindcss.com"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 		<style>
-			/* Custom scrollbar */
 			::-webkit-scrollbar {
 				width: 8px;
 			}
@@ -32,7 +31,6 @@
 				max-height: 250px;
 			}
 
-			/* Animations */
 			@keyframes slideIn {
 				from {
 					transform: translateY(100%);
@@ -118,6 +116,7 @@
 				<section
 					class="bg-prpanel rounded-lg border border-slate-700 p-4 shrink-0 shadow-lg">
 					<h2
+						id="formTitle"
 						class="text-sm font-semibold text-slate-300 mb-2 uppercase tracking-wider border-b border-slate-700 pb-2">
 						➕ Lưu lên Cloud
 					</h2>
@@ -153,18 +152,25 @@
 								required
 								class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white focus:outline-none focus:border-praccent" />
 						</div>
-						<button
-							type="submit"
-							id="submitBtn"
-							disabled
-							class="w-full bg-praccent hover:bg-blue-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded transition-colors text-sm mt-2 flex justify-center items-center gap-2">
-							+ Thêm vào Database
-						</button>
+						<div class="flex gap-2 mt-2">
+							<button
+								type="submit"
+								id="submitBtn"
+								disabled
+								class="flex-1 bg-praccent hover:bg-blue-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded transition-colors text-sm flex justify-center items-center gap-2">
+								+ Thêm
+							</button>
+							<button
+								type="button"
+								id="cancelEditBtn"
+								class="hidden bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded transition-colors text-sm">
+								Hủy
+							</button>
+						</div>
 					</form>
 				</section>
 			</aside>
 
-			<!-- Right Panel: Database List, Search, Filter -->
 			<section
 				class="w-full md:w-2/3 lg:w-3/4 bg-prpanel rounded-lg border border-slate-700 flex flex-col overflow-hidden shadow-lg">
 				<div
@@ -191,7 +197,6 @@
 					</div>
 				</div>
 
-				<!-- Sort Bar -->
 				<div
 					class="px-4 py-2 bg-slate-800/80 border-b border-slate-700 flex items-center gap-2 text-xs shrink-0 flex-wrap"
 					id="sortContainer"></div>
@@ -218,7 +223,6 @@
 
 		<div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
-		<!-- Firebase Logic & Application Scripts -->
 		<script type="module">
 			import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
 			import {
@@ -231,12 +235,13 @@
 				getFirestore,
 				collection,
 				addDoc,
+				updateDoc,
 				deleteDoc,
 				doc,
 				onSnapshot,
 			} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-			// BẠN HÃY DÁN CẤU HÌNH FIREBASE THẬT CỦA BẠN VÀO ĐÂY BÊN DƯỚI:
+			// BẠN ĐIỀN API KEY CỦA BẠN VÀO ĐÂY:
 			const firebaseConfig = {
 				apiKey: 'AIzaSyCxXis-5gNCy18sBM2iTAw6T5IfbpcKi8o',
 				authDomain: 'premiere-timeline-manager.firebaseapp.com',
@@ -261,6 +266,7 @@
 			}
 
 			let currentUser = null;
+			let editingId = null;
 
 			class Asset {
 				constructor(id, type, rawTime, desc, createdAt) {
@@ -331,8 +337,10 @@
 			const searchInput = document.getElementById('searchInput');
 			const filterSelect = document.getElementById('filterSelect');
 			const addForm = document.getElementById('addForm');
+			const formTitle = document.getElementById('formTitle');
 			const countDisplay = document.getElementById('totalCountDisplay');
 			const submitBtn = document.getElementById('submitBtn');
+			const cancelEditBtn = document.getElementById('cancelEditBtn');
 			const syncDot = document.getElementById('syncDot');
 			const syncText = document.getElementById('syncText');
 
@@ -345,7 +353,6 @@
 						} catch (customTokenError) {
 							console.warn(
 								'Token hệ thống không khớp. Đang tự động chuyển sang Đăng nhập Ẩn danh...',
-								customTokenError,
 							);
 							await signInAnonymously(auth);
 						}
@@ -355,7 +362,7 @@
 				} catch (err) {
 					console.error('Chi tiết Lỗi Xác Thực Firebase:', err);
 					showToast(
-						`Lỗi xác thực: ${err.code || 'Bị chặn bởi trình duyệt. Hãy dùng Live Server!'}`,
+						`Lỗi xác thực: Bị chặn bởi trình duyệt. Hãy dùng Live Server!`,
 						'bg-red-600',
 					);
 					updateSyncUI(false);
@@ -382,7 +389,6 @@
 					currentUser = user;
 					if (user) {
 						updateSyncUI(true);
-
 						const assetsCollectionRef = collection(
 							db,
 							'artifacts',
@@ -409,7 +415,6 @@
 											),
 										);
 									});
-
 									updateUI();
 								},
 								(error) => {
@@ -433,7 +438,6 @@
 				showToast('Firebase Auth chưa sẵn sàng', 'bg-red-600');
 			}
 
-			// --- UI RENDER FUNCTIONS ---
 			let activeSorts = [];
 			const sortOptions = [
 				{ key: 'type', label: 'Type' },
@@ -531,13 +535,16 @@
 						asset.type === 'SFX'
 							? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
 							: 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+					const isEditing = asset.id === editingId;
+					const rowBg = isEditing
+						? 'bg-blue-900/40 border-blue-500/50'
+						: 'bg-slate-800/40 border-transparent hover:bg-slate-700/60 hover:border-slate-600';
 
 					const row = document.createElement('div');
-					row.className =
-						'group grid grid-cols-12 gap-4 items-center px-4 py-3 bg-slate-800/40 hover:bg-slate-700/60 border border-transparent hover:border-slate-600 rounded transition-all cursor-pointer';
+					row.className = `group grid grid-cols-12 gap-4 items-center px-4 py-3 border rounded transition-all cursor-pointer ${rowBg}`;
 
 					row.onclick = (e) => {
-						if (!e.target.closest('.delete-btn')) {
+						if (!e.target.closest('button')) {
 							handleCopy(asset.getCopyString());
 						}
 					};
@@ -556,8 +563,8 @@
                         ${asset.displayDate}
                     </div>
                     <div class="col-span-2 flex justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                        <button class="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-white flex items-center gap-1 shadow">
-                            <span>📋</span> Copy
+                        <button class="edit-btn text-xs bg-blue-900/60 hover:bg-blue-600 px-2 py-1 rounded text-white transition-colors shadow border border-blue-700/50" data-id="${asset.id}" title="Chỉnh sửa">
+                            ✏️
                         </button>
                         <button class="delete-btn text-xs bg-red-900/50 hover:bg-red-600 px-2 py-1 rounded text-white transition-colors border border-red-800 hover:border-red-500" data-id="${asset.id}" title="Xóa khỏi Database">
                             ✕
@@ -571,6 +578,12 @@
 					btn.onclick = async (e) => {
 						e.stopPropagation();
 						const docId = e.currentTarget.getAttribute('data-id');
+
+						if (docId === editingId) {
+							showToast('Không thể xóa mục đang được chỉnh sửa', 'bg-amber-600');
+							return;
+						}
+
 						if (confirm('Bạn có chắc muốn xóa vĩnh viễn mục này khỏi Database?')) {
 							if (!currentUser) return;
 							try {
@@ -582,6 +595,36 @@
 								showToast('Lỗi khi xóa', 'bg-red-600');
 								console.error(err);
 							}
+						}
+					};
+				});
+
+				document.querySelectorAll('.edit-btn').forEach((btn) => {
+					btn.onclick = (e) => {
+						e.stopPropagation();
+						const docId = e.currentTarget.getAttribute('data-id');
+						const assetToEdit = memoryAssets.find((a) => a.id === docId);
+
+						if (assetToEdit) {
+							editingId = docId;
+
+							document.getElementById('inputType').value = assetToEdit.type;
+							document.getElementById('inputTime').value = assetToEdit.rawTime;
+							document.getElementById('inputDesc').value = assetToEdit.desc;
+
+							formTitle.innerHTML = '✏️ Chỉnh sửa Asset';
+							formTitle.classList.replace('text-slate-300', 'text-green-400');
+
+							submitBtn.innerHTML = '💾 Cập nhật';
+							submitBtn.classList.replace('bg-praccent', 'bg-green-600');
+							submitBtn.classList.replace('hover:bg-blue-600', 'hover:bg-green-500');
+
+							cancelEditBtn.classList.remove('hidden');
+
+							updateUI();
+							document
+								.getElementById('addForm')
+								.scrollIntoView({ behavior: 'smooth' });
 						}
 					};
 				});
@@ -643,9 +686,24 @@
 				renderChart();
 			}
 
-			// --- INTERACTION LOGIC ---
+			function resetForm() {
+				editingId = null;
+				addForm.reset();
+
+				formTitle.innerHTML = '➕ Lưu lên Cloud';
+				formTitle.classList.replace('text-green-400', 'text-slate-300');
+
+				submitBtn.innerHTML = '+ Thêm';
+				submitBtn.classList.replace('bg-green-600', 'bg-praccent');
+				submitBtn.classList.replace('hover:bg-green-500', 'hover:bg-blue-600');
+
+				cancelEditBtn.classList.add('hidden');
+				updateUI();
+			}
+
 			searchInput.addEventListener('input', renderList);
 			filterSelect.addEventListener('change', renderList);
+			cancelEditBtn.addEventListener('click', resetForm);
 
 			addForm.addEventListener('submit', async (e) => {
 				e.preventDefault();
@@ -659,32 +717,42 @@
 				const desc = document.getElementById('inputDesc').value;
 
 				try {
-					const assetsCollectionRef = collection(
-						db,
-						'artifacts',
-						appId,
-						'public',
-						'data',
-						'assets',
-					);
-					await addDoc(assetsCollectionRef, {
-						type: type,
-						rawTime: time,
-						desc: desc,
-						createdAt: Date.now(),
-					});
-
-					showToast('Đã lưu dữ liệu lên Cloud Database!', 'bg-green-600');
-
-					document.getElementById('inputTime').value = '';
-					document.getElementById('inputDesc').value = '';
+					if (editingId) {
+						const docRef = doc(
+							db,
+							'artifacts',
+							appId,
+							'public',
+							'data',
+							'assets',
+							editingId,
+						);
+						await updateDoc(docRef, { type: type, rawTime: time, desc: desc });
+						showToast('Đã cập nhật thay đổi!', 'bg-green-600');
+					} else {
+						const assetsCollectionRef = collection(
+							db,
+							'artifacts',
+							appId,
+							'public',
+							'data',
+							'assets',
+						);
+						await addDoc(assetsCollectionRef, {
+							type: type,
+							rawTime: time,
+							desc: desc,
+							createdAt: Date.now(),
+						});
+						showToast('Đã thêm dữ liệu mới lên DB!', 'bg-green-600');
+					}
+					resetForm();
 					document.getElementById('inputTime').focus();
 				} catch (err) {
 					showToast('Lỗi lưu Database!', 'bg-red-600');
 					console.error(err);
-				} finally {
 					submitBtn.disabled = false;
-					submitBtn.innerHTML = '+ Thêm vào Database';
+					submitBtn.innerHTML = editingId ? '💾 Cập nhật' : '+ Thêm';
 				}
 			});
 
