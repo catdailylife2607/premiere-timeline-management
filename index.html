@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Premiere Timeline Asset Manager - Cloud Sync</title>
+		<title>Premiere Timeline Asset Manager - Data Seeder</title>
 		<script src="https://cdn.tailwindcss.com"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 		<style>
@@ -77,7 +77,6 @@
 		</script>
 	</head>
 	<body class="bg-prdark text-prtext font-sans h-screen overflow-hidden flex flex-col relative">
-		<!-- Top Navigation / Header -->
 		<header
 			class="bg-prpanel border-b border-slate-700 p-4 flex justify-between items-center shrink-0">
 			<div class="flex items-center gap-3">
@@ -85,9 +84,8 @@
 					<h1 class="text-xl font-bold text-white tracking-wide">
 						🎬 TIMELINE ASSET MANAGER
 					</h1>
-					<p class="text-xs text-slate-400">Project Premiere: NoSQL Cloud Database</p>
+					<p class="text-xs text-slate-400">Project Premiere: Global Cloud Sync</p>
 				</div>
-				<!-- Sync Status Indicator -->
 				<div
 					id="syncStatus"
 					class="flex items-center gap-2 px-2 py-1 bg-slate-800 rounded-full border border-slate-600 text-xs">
@@ -104,11 +102,10 @@
 			</div>
 		</header>
 
-		<!-- Main Content Area -->
 		<main class="flex-1 flex flex-col md:flex-row overflow-hidden p-4 gap-4">
-			<!-- Left Panel: Stats & Add Form -->
-			<aside class="w-full md:w-1/3 lg:w-1/4 flex flex-col gap-4 overflow-y-auto">
-				<section class="bg-prpanel rounded-lg border border-slate-700 p-4 shrink-0">
+			<aside class="w-full md:w-1/3 lg:w-1/4 flex flex-col gap-4 overflow-y-auto pr-1 pb-4">
+				<section
+					class="bg-prpanel rounded-lg border border-slate-700 p-4 shrink-0 shadow-lg">
 					<h2
 						class="text-sm font-semibold text-slate-300 mb-2 uppercase tracking-wider border-b border-slate-700 pb-2">
 						📊 Thống kê DB
@@ -118,7 +115,8 @@
 					</div>
 				</section>
 
-				<section class="bg-prpanel rounded-lg border border-slate-700 p-4 shrink-0">
+				<section
+					class="bg-prpanel rounded-lg border border-slate-700 p-4 shrink-0 shadow-lg">
 					<h2
 						class="text-sm font-semibold text-slate-300 mb-2 uppercase tracking-wider border-b border-slate-700 pb-2">
 						➕ Lưu lên Cloud
@@ -168,7 +166,7 @@
 
 			<!-- Right Panel: Database List, Search, Filter -->
 			<section
-				class="w-full md:w-2/3 lg:w-3/4 bg-prpanel rounded-lg border border-slate-700 flex flex-col overflow-hidden">
+				class="w-full md:w-2/3 lg:w-3/4 bg-prpanel rounded-lg border border-slate-700 flex flex-col overflow-hidden shadow-lg">
 				<div
 					class="p-4 border-b border-slate-700 flex flex-col sm:flex-row gap-3 bg-slate-800/50 shrink-0">
 					<div class="flex-1 relative">
@@ -193,12 +191,10 @@
 					</div>
 				</div>
 
-				<!-- Sort Bar (Tính năng Multiple Sort) -->
+				<!-- Sort Bar -->
 				<div
 					class="px-4 py-2 bg-slate-800/80 border-b border-slate-700 flex items-center gap-2 text-xs shrink-0 flex-wrap"
-					id="sortContainer">
-					<!-- Các nút Sort sẽ được Render bằng JS tại đây -->
-				</div>
+					id="sortContainer"></div>
 
 				<div
 					class="grid grid-cols-12 gap-4 px-6 py-2 bg-slate-800 text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
@@ -210,7 +206,6 @@
 				</div>
 
 				<div id="assetList" class="flex-1 overflow-y-auto p-2 space-y-1">
-					<!-- Data from Firestore will be injected here -->
 					<div
 						class="flex justify-center items-center h-full text-slate-500 flex-col gap-2">
 						<div
@@ -225,13 +220,13 @@
 
 		<!-- Firebase Logic & Application Scripts -->
 		<script type="module">
-			import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js';
+			import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
 			import {
 				getAuth,
 				signInWithCustomToken,
 				signInAnonymously,
 				onAuthStateChanged,
-			} from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
+			} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 			import {
 				getFirestore,
 				collection,
@@ -239,12 +234,11 @@
 				deleteDoc,
 				doc,
 				onSnapshot,
-				getDocs,
-			} from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
+			} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-			// BẠN HÃY DÁN CẤU HÌNH FIREBASE THẬT CỦA BẠN VÀO ĐÂY:
+			// BẠN HÃY DÁN CẤU HÌNH FIREBASE THẬT CỦA BẠN VÀO ĐÂY BÊN DƯỚI:
 			const firebaseConfig = {
-				apiKey: 'AIzaSyCxXis-5gNCy18sBM2iTAw6T5IfbpcKi8o', // Dán lại apiKey thật của bạn
+				apiKey: 'AIzaSyCxXis-5gNCy18sBM2iTAw6T5IfbpcKi8o',
 				authDomain: 'premiere-timeline-manager.firebaseapp.com',
 				projectId: 'premiere-timeline-manager',
 				storageBucket: 'premiere-timeline-manager.firebasestorage.app',
@@ -257,10 +251,9 @@
 					: firebaseConfig;
 			const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-premiere-project';
 
-			// Firebase Initialization
 			let app, auth, db;
 			try {
-				app = initializeApp(firebaseConfig);
+				app = initializeApp(envConfig);
 				auth = getAuth(app);
 				db = getFirestore(app);
 			} catch (error) {
@@ -269,14 +262,13 @@
 
 			let currentUser = null;
 
-			// --- OOP MOCK (Data Structure) ---
 			class Asset {
 				constructor(id, type, rawTime, desc, createdAt) {
 					this.id = id;
 					this.type = type;
 					this.rawTime = rawTime;
 					this.desc = desc;
-					this.createdAt = createdAt || 0; // Epoch time cho sắp xếp
+					this.createdAt = createdAt || 0;
 
 					this.normalized = this.parseTime(rawTime);
 					this.displayTime = this.formatDisplayTime();
@@ -332,222 +324,9 @@
 				}
 			}
 
-			const initialData = [
-				// --- SFX ---
-				{ t: 'SFX', time: '0:00', d: 'Snore mimi (mèo ngáy cute)' },
-				{ t: 'SFX', time: '03:52', d: 'Awas jatoh' },
-				{ t: 'SFX', time: '05:26', d: 'Yokoso' },
-				{ t: 'SFX', time: '06:09', d: 'Tolong kaki saya skit' },
-				{ t: 'SFX', time: '07:35', d: 'Gah Dam' },
-				{ t: 'SFX', time: '08:56', d: 'Brain fart' },
-				{ t: 'SFX', time: '10:33', d: 'Tasukete (cứu)' },
-				{ t: 'SFX', time: '12:15', d: 'Ngeon (tiếng gì đó vút qua)' },
-				{ t: 'SFX', time: '13:30', d: 'He He He Ha (đàn ông giọng trầm cười)' },
-				{ t: 'SFX', time: '14:31', d: 'Furina scream' },
-				{ t: 'SFX', time: '15:42', d: 'Mr Krab walking (tiếng cua đi)' },
-				{ t: 'SFX', time: '18:37', d: 'Enrique (giống tiếng kêu ai đó)' },
-				{ t: 'SFX', time: '19:45', d: 'Lobotomy (tiếng còi xe tả)' },
-				{ t: 'SFX', time: '23:51', d: 'Mi bombo' },
-				{ t: 'SFX', time: '25:13', d: 'Gey Echo' },
-				{ t: 'SFX', time: '28:31', d: 'Wait wait wait what the hell' },
-				{ t: 'SFX', time: '01:10:22', d: 'Bone crack' },
-				{ t: 'SFX', time: '01:10:42', d: 'Frog laughing meme' },
-				{ t: 'SFX', time: '01:14:20', d: 'Mentality (Transition)' },
-				{ t: 'SFX', time: '01:15:01', d: 'What da dog doin' },
-				{ t: 'SFX', time: '01:16:09', d: 'Squidquart walking sound' },
-				{
-					t: 'SFX',
-					time: '01:19:21',
-					d: 'Goku drip (teo tèo téo teo tèo teo, nghiêm trọng)',
-				},
-				{ t: 'SFX', time: '01:24:08', d: 'Goofy ah car honk sound' },
-				{ t: 'SFX', time: '01:26:49', d: 'Fucking you fuck you (tiếng cãi lộn Indian)' },
-				{ t: 'SFX', time: '01:36:58', d: 'Window XP turn on' },
-				{ t: 'SFX', time: '01:40:21', d: 'Bruh' },
-				{ t: 'SFX', time: '01:40:49', d: 'Rizz sound' },
-				{ t: 'SFX', time: '01:42:16', d: 'Man scream' },
-				{ t: 'SFX', time: '01:47:24', d: 'Fart echo sound' },
-				{ t: 'SFX', time: '01:50:49', d: 'RAHHHHH' },
-				{ t: 'SFX', time: '01:52:00', d: 'Cricket (tiếng dế)' },
-				{ t: 'SFX', time: '01:57:02', d: 'FPI Open up' },
-				{ t: 'SFX', time: '01:58:51', d: 'Window XP Shutdown' },
-				{ t: 'SFX', time: '02:01:01', d: 'Don Pollo (tiếng nói nhải)' },
-				{ t: 'SFX', time: '02:03:18', d: 'Vine Boom' },
-				{
-					t: 'SFX',
-					time: '02:06:13',
-					d: 'Dawg & Shlawg Sound (tiếng chó nhải, âm nhỏ dần)',
-				},
-				{ t: 'SFX', time: '02:12:35', d: 'JOHN CENA' },
-				{ t: 'SFX', time: '02:16:51', d: 'Bababooey' },
-				{ t: 'SFX', time: '02:17:36', d: 'Quack' },
-				{ t: 'SFX', time: '02:17:47', d: 'Wow' },
-				{ t: 'SFX', time: '02:18:11', d: '!!!!' },
-				{ t: 'SFX', time: '02:18:57', d: 'Nani????' },
-				{ t: 'SFX', time: '02:19:37', d: 'Mouse Click' },
-				{ t: 'SFX', time: '02:19:45', d: 'Mission fail, we get em next time' },
-				{ t: 'SFX', time: '02:21:34', d: 'Kids cheering' },
-				{ t: 'SFX', time: '02:25:22', d: 'Ding' },
-				{ t: 'SFX', time: '02:26:19', d: 'Amongus (red button)' },
-				{ t: 'SFX', time: '02:27:29', d: 'Hehe boi' },
-				{ t: 'SFX', time: '02:28:36', d: 'Noice' },
-				{ t: 'SFX', time: '02:31:00', d: 'oke (ông da đen nói oke)' },
-				{
-					t: 'SFX',
-					time: '02:31:21',
-					d: 'Wii theme meme (teo teo téo teo teo tèo tèo tèo)',
-				},
-				{ t: 'SFX', time: '02:44:52', d: 'Just do it' },
-				{ t: 'SFX', time: '02:48:13', d: 'omg wow' },
-				{ t: 'SFX', time: '02:51:55', d: 'pewdiepie wow (wow high pitch, echo)' },
-				{ t: 'SFX', time: '02:54:26', d: 'dammmmmmmm' },
-				{ t: 'SFX', time: '02:56:43', d: 'Amogus' },
-				{ t: 'SFX', time: '02:59:49', d: 'U' },
-				{ t: 'SFX', time: '03:00:09', d: 'Mèo Tom hét' },
-				{ t: 'SFX', time: '03:02:20', d: 'Đấm' },
-				{ t: 'SFX', time: '03:02:33', d: 'Bonk' },
-				{ t: 'SFX', time: '03:02:53', d: 'Bruh' },
-				{ t: 'SFX', time: '03:03:20', d: 'Cái lồn gì thế' },
-				{ t: 'SFX', time: '03:06:08', d: 'Discord' },
-				{ t: 'SFX', time: '03:06:20', d: 'Ăn cặc rồi' },
-				{ t: 'SFX', time: '03:09:09', d: 'Tua nhanh' },
-				{ t: 'SFX', time: '03:11:47', d: 'Suprise motherFker' },
-				{ t: 'SFX', time: '03:15:29', d: 'A few moment later' },
-				{ t: 'SFX', time: '03:17:14', d: 'Cowboy' },
-				{ t: 'SFX', time: '03:18:56', d: 'Pluh' },
-				{ t: 'SFX', time: '03:19:24', d: 'Violin Screech (Liếc)' },
-				{ t: 'SFX', time: '03:22:13', d: 'Funny laugh meme' },
-				{ t: 'SFX', time: '03:26:52', d: 'Bone crack' },
-				{ t: 'SFX', time: '03:27:24', d: 'Bass drop + Vine boom (Suprise đơ người)' },
-				{ t: 'SFX', time: '03:31:09', d: 'Spongebob fog horn' },
-				{ t: 'SFX', time: '03:33:22', d: 'Lego breaking' },
-				{ t: 'SFX', time: '03:34:22', d: 'Falling iron' },
-				{ t: 'SFX', time: '03:36:52', d: 'Bass boosted (racist/angry)' },
-				{ t: 'SFX', time: '03:38:55', d: 'Bell sound (hên sống sót + Jesus)' },
-				{ t: 'SFX', time: '03:43:03', d: 'Boowomp' },
-				{ t: 'SFX', time: '03:43:25', d: 'Tung (boink)' },
-				{ t: 'SFX', time: '03:43:48', d: 'Taco bell (chuông nhà thờ kéo dài)' },
-				{ t: 'SFX', time: '03:45:26', d: 'Funny Bounce' },
-				{ t: 'SFX', time: '03:46:20', d: 'Suspense' },
-				{ t: 'SFX', time: '03:47:52', d: 'Doubt' },
-				{ t: 'SFX', time: '03:49:17', d: 'Funny bounce 2' },
-				{ t: 'SFX', time: '03:49:43', d: 'Funny laugh (Muehehehehhe nhanh dồn dập)' },
-				{ t: 'SFX', time: '03:51:10', d: 'Illuminaty (hoang mang sound)' },
-				{ t: 'SFX', time: '04:05:45', d: 'Rock sliding' },
-				{ t: 'SFX', time: '04:07:06', d: 'Again SFX' },
-				{ t: 'SFX', time: '04:07:29', d: 'Ace attorney Realization (ngộ ra)' },
-				{ t: 'SFX', time: '04:08:39', d: 'Daniel (giọng cười giống con lừa)' },
-				{
-					t: 'SFX',
-					time: '04:11:14',
-					d: 'Comical Duck Quack (tiếng vịt kêu + echo + kéo dài)',
-				},
-				{ t: 'SFX', time: '04:13:10', d: 'Naruto sexiness' },
-				{ t: 'SFX', time: '04:23:19', d: 'Dank crying' },
-				{ t: 'SFX', time: '04:25:47', d: 'Thunder' },
-				{ t: 'SFX', time: '04:32:11', d: 'Magic reveal' },
-				{
-					t: 'SFX',
-					time: '04:33:11',
-					d: 'Zume chime 1-5 (SFX ăn chuỗi 5 hit của game zume)',
-				},
-				{ t: 'SFX', time: '04:38:28', d: 'Valorant kill sounds (epic sound)' },
-				{ t: 'SFX', time: '04:54:52', d: 'Hah' },
-				{ t: 'SFX', time: '04:55:32', d: 'Scream 1' },
-				{ t: 'SFX', time: '04:57:17', d: 'Scream 2' },
-				{ t: 'SFX', time: '04:57:48', d: 'Scream 3 (giống bị ma dí)' },
-				{ t: 'SFX', time: '05:08:18', d: 'Scream 4 (em bé la)' },
-				{ t: 'SFX', time: '05:17:50', d: 'Scream 5 (roblox)' },
-				{ t: 'SFX', time: '05:18:49', d: 'Scream 6 (nhóc trai la)' },
-				{ t: 'SFX', time: '05:21:46', d: 'Yarp' },
-				{ t: 'SFX', time: '05:22:30', d: 'Goodbye felicia (gút bay + bắn súng)' },
-				{ t: 'SFX', time: '05:26:02', d: 'Beyonce (bì yorn cề  💅 )' },
-				{ t: 'SFX', time: '05:29:03', d: 'Scream 8 (bé gái la nốt cao)' },
-				{ t: 'SFX', time: '05:29:39', d: 'Scream 9 (Chết chị gòi em ơi  💅☠️ )' },
-				{ t: 'SFX', time: '05:31:49', d: 'Ketawa jahyad (nụ cười phù đủy)' },
-				{ t: 'SFX', time: '05:36:17', d: 'Ding' },
-				{ t: 'SFX', time: '05:37:06', d: 'Aughhhhhhhh (thường được xem là SFX ngáy meme)' },
-				{
-					t: 'SFX',
-					time: '05:46:04',
-					d: 'Directed by ROBERT B.WEIDE (SFX ending phim meme)',
-				},
-				{ t: 'SFX', time: '05:56:09', d: 'Yaaaaaaaayyyy (yay meme)' },
-				{ t: 'SFX', time: '06:32:00', d: 'Adit tonlingdit' },
-				{ t: 'SFX', time: '06:34:08', d: 'Cat laugh meme' },
-				{ t: 'SFX', time: '06:37:21', d: 'backgr music' },
-				{ t: 'SFX', time: '06:51:57', d: 'Etakonyaaaa' },
-				{ t: 'SFX', time: '06:54:00', d: 'Window error SFX' },
-				{ t: 'SFX', time: '06:54:47', d: 'ngakak laugh annoying (meme con chó cười)' },
-				{ t: 'SFX', time: '06:59:32', d: 'adu gantenngnya' },
-				{ t: 'SFX', time: '07:01:32', d: 'spiderman meme song' },
-				{ t: 'SFX', time: '07:13:45', d: 'OOF (roblox OOF)' },
-				{ t: 'SFX', time: '07:14:03', d: 'Boink + nhà thờ' },
-				{ t: 'SFX', time: '07:16:13', d: 'SOS (tiếng siren)' },
-				{ t: 'SFX', time: '07:22:02', d: 'chill sound (sound có theme biển)' },
-				{ t: 'SFX', time: '07:37:27', d: 'Door knock' },
-				{ t: 'SFX', time: '07:40:45', d: 'Ayayayay drop beat (ấn độ)' },
-				{
-					t: 'SFX',
-					time: '07:50:07',
-					d: 'Hoang mang SFX (teo teo tèo téo teo, téo téo téo)',
-				},
-				{ t: 'SFX', time: '07:58:57', d: 'Tada (bss SFX)' },
-				{ t: 'SFX', time: '08:00:17', d: 'Cinematic suspense (transition)' },
-				{ t: 'SFX', time: '08:08:01', d: 'Rizz music (music, not sound)' },
-				{ t: 'SFX', time: '08:14:13', d: 'Ringtone music' },
-				{ t: 'SFX', time: '08:19:16', d: 'The bluetooth is ready to pale' },
-				{ t: 'SFX', time: '08:22:15', d: 'Cartoon bite' },
-				{ t: 'SFX', time: '08:22:30', d: 'minecraft item drop/pick' },
-				{ t: 'SFX', time: '08:22:34', d: 'Cartoon turn' },
-				{ t: 'SFX', time: '08:23:10', d: 'Wining (bss SFX)' },
-				{ t: 'SFX', time: '08:24:25', d: 'Train horn' },
-				{ t: 'SFX', time: '08:25:07', d: 'Enemy counter undertale' },
-				{ t: 'SFX', time: '08:25:22', d: 'Horror SFX' },
-				{ t: 'SFX', time: '08:28:14', d: 'Question mark' },
-				{ t: 'SFX', time: '08:29:25', d: 'Eagle' },
-				{ t: 'SFX', time: '08:31:21', d: 'Shotgun reload' },
-				{ t: 'SFX', time: '08:31:50', d: 'pubg pan' },
-				{ t: 'SFX', time: '08:32:22', d: 'CS go go go' },
-				{ t: 'SFX', time: '08:33:44', d: 'CS bomb has been planted' },
-				{ t: 'SFX', time: '08:35:12', d: 'Squeaky (lau kính SFX)' },
-
-				// --- Meme ---
-				{ t: 'Meme', time: '08:36:28', d: 'John cena dancing (sticker)' },
-				{ t: 'Meme', time: '00:08:45:16', d: 'u i i i a cat meme' },
-				{ t: 'Meme', time: '00:08:57:54', d: 'cat sleeping face meme' },
-				{ t: 'Meme', time: '00:09:05:50', d: 'cat dancing meme' },
-				{ t: 'Meme', time: '00:09:13:18', d: 'Banana cat running meme' },
-				{ t: 'Meme', time: '00:09:15:39', d: 'YAPAPA cat meme' },
-				{ t: 'Meme', time: '00:09:23:37', d: 'Cat confused looking meme' },
-				{ t: 'Meme', time: '00:09:31:57', d: 'Sleeping cat being annoyed meme' },
-				{ t: 'Meme', time: '00:09:37:13', d: 'Cat watching cartoon meme' },
-				{ t: 'Meme', time: '00:09:43:20', d: 'Fat cat sitting meme' },
-				{ t: 'Meme', time: '00:09:51:12', d: 'Cat reading meme' },
-				{ t: 'Meme', time: '00:09:56:19', d: 'Banana cat crying meme' },
-				{ t: 'Meme', time: '00:09:59:29', d: 'Fat cat reading newspaper meme' },
-				{ t: 'Meme', time: '00:10:08:15', d: 'Cat rizz meme' },
-				{ t: 'Meme', time: '00:10:18:15', d: 'Cat standing sleeping meme' },
-				{ t: 'Meme', time: '00:10:25:47', d: 'Maxwell the cat meme' },
-				{ t: 'Meme', time: '00:10:40:15', d: 'Cat staring meme' },
-				{ t: 'Meme', time: '00:10:50:51', d: 'Mèo xin xỏ meme' },
-				{ t: 'Meme', time: '00:11:01:00', d: 'Silly cat dance meme' },
-				{ t: 'Meme', time: '00:11:08:32', d: 'Father cat staring meme' },
-				{ t: 'Meme', time: '00:11:19:38', d: 'Popipo cat meme' },
-				{ t: 'Meme', time: '00:11:25:18', d: 'Butterfly cat dancing meme' },
-				{ t: 'Meme', time: '00:11:37:10', d: 'Cat counting cash meme' },
-				{ t: 'Meme', time: '00:11:48:02', d: 'Cat kucing meme' },
-				{ t: 'Meme', time: '00:11:52:06', d: 'Fat cat dancing' },
-				{ t: 'Meme', time: '00:12:03:48', d: 'Cat staring forwardly meme' },
-				{ t: 'Meme', time: '00:12:14:30', d: 'Cat feeling sus meme' },
-				{ t: 'Meme', time: '00:12:20:44', d: 'Cat lying down meme' },
-			];
-
-			// System State
 			let memoryAssets = [];
 			let myChart = null;
 
-			// DOM Elements
 			const listEl = document.getElementById('assetList');
 			const searchInput = document.getElementById('searchInput');
 			const filterSelect = document.getElementById('filterSelect');
@@ -557,18 +336,15 @@
 			const syncDot = document.getElementById('syncDot');
 			const syncText = document.getElementById('syncText');
 
-			// --- AUTHENTICATION & DATABASE INIT ---
 			const initAuth = async () => {
 				if (!auth) return;
 				try {
 					if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
 						try {
-							// Thử dùng token mặc định
 							await signInWithCustomToken(auth, __initial_auth_token);
 						} catch (customTokenError) {
-							// Xảy ra khi Firebase Config của người dùng khác với token hệ thống
 							console.warn(
-								'Token hệ thống không khớp với Firebase cá nhân. Đang tự động chuyển sang Đăng nhập Ẩn danh...',
+								'Token hệ thống không khớp. Đang tự động chuyển sang Đăng nhập Ẩn danh...',
 								customTokenError,
 							);
 							await signInAnonymously(auth);
@@ -606,50 +382,17 @@
 					currentUser = user;
 					if (user) {
 						updateSyncUI(true);
-						// Schema tương đương MongoDB: Database -> Collection -> Document
-						// Path strict rule: artifacts/{appId}/users/{userId}/assets
+
 						const assetsCollectionRef = collection(
 							db,
 							'artifacts',
 							appId,
-							'users',
-							user.uid,
+							'public',
+							'data',
 							'assets',
 						);
 
 						try {
-							// Nạp thêm các file mới từ initialData vào Database một cách thông minh (tránh trùng lặp)
-							const snapshot = await getDocs(assetsCollectionRef);
-							const existingSignatures = new Set();
-							snapshot.forEach((docSnap) => {
-								const data = docSnap.data();
-								existingSignatures.add(`${data.type}_${data.rawTime}_${data.desc}`);
-							});
-
-							let newlyAdded = 0;
-							let seedTime = Date.now(); // Tạo thời gian mốc
-							for (const item of initialData) {
-								const sig = `${item.t}_${item.time}_${item.d}`;
-								if (!existingSignatures.has(sig)) {
-									// Cộng dồn seedTime để giữ nguyên thứ tự ban đầu của File Word
-									await addDoc(assetsCollectionRef, {
-										type: item.t,
-										rawTime: item.time,
-										desc: item.d,
-										createdAt: seedTime++,
-									});
-									newlyAdded++;
-								}
-							}
-
-							if (newlyAdded > 0) {
-								showToast(
-									`Đã tự động nạp thêm ${newlyAdded} file mới vào DB!`,
-									'bg-blue-600',
-								);
-							}
-
-							// Bật bộ lắng nghe Real-time DB (Thay thế cấu trúc In-memory cũ)
 							onSnapshot(
 								assetsCollectionRef,
 								(snap) => {
@@ -684,7 +427,7 @@
 					}
 				});
 
-				initAuth(); // Kích hoạt
+				initAuth();
 			} else {
 				updateSyncUI(false);
 				showToast('Firebase Auth chưa sẵn sàng', 'bg-red-600');
@@ -699,15 +442,13 @@
 				{ key: 'createdAt', label: 'Ngày thêm' },
 			];
 
-			// Gắn hàm xử lý Sort ra Global để onclick từ HTML bắt được
 			window.toggleSort = function (key) {
 				const idx = activeSorts.findIndex((s) => s.key === key);
 				if (idx >= 0) {
-					if (activeSorts[idx].dir === 1)
-						activeSorts[idx].dir = -1; // Thành Desc
-					else activeSorts.splice(idx, 1); // Bỏ sort nếu bấm lần 3
+					if (activeSorts[idx].dir === 1) activeSorts[idx].dir = -1;
+					else activeSorts.splice(idx, 1);
 				} else {
-					activeSorts.push({ key, dir: 1 }); // Mặc định Asc khi mới thêm
+					activeSorts.push({ key, dir: 1 });
 				}
 				updateUI();
 			};
@@ -729,7 +470,6 @@
 					let icon = '↕';
 					let badge = '';
 
-					// Nếu đang Active
 					if (activeIdx >= 0) {
 						btnClass = 'bg-praccent text-white border-blue-400 font-medium';
 						icon = activeSorts[activeIdx].dir === 1 ? '▲' : '▼';
@@ -751,7 +491,6 @@
 				const searchTerm = searchInput.value.toLowerCase();
 				const typeFilter = filterSelect.value;
 
-				// 1. Lọc dữ liệu
 				let filteredData = memoryAssets.filter((asset) => {
 					const matchType = typeFilter === 'All' || asset.type === typeFilter;
 					const matchSearch =
@@ -760,7 +499,6 @@
 					return matchType && matchSearch;
 				});
 
-				// 2. Chạy Thuật toán Multiple Sort
 				if (activeSorts.length > 0) {
 					filteredData.sort((a, b) => {
 						for (let i = 0; i < activeSorts.length; i++) {
@@ -776,10 +514,9 @@
 							if (valA < valB) return -1 * dir;
 							if (valA > valB) return 1 * dir;
 						}
-						return 0; // Nếu bằng nhau toàn bộ thì giữ nguyên vị trí
+						return 0;
 					});
 				} else {
-					// Mặc định luôn sort theo vị trí Timeline (timestamp video)
 					filteredData.sort((a, b) => a.sortValue - b.sortValue);
 				}
 
@@ -830,7 +567,6 @@
 					listEl.appendChild(row);
 				});
 
-				// Gắn sự kiện Delete cho các nút vừa tạo
 				document.querySelectorAll('.delete-btn').forEach((btn) => {
 					btn.onclick = async (e) => {
 						e.stopPropagation();
@@ -838,17 +574,8 @@
 						if (confirm('Bạn có chắc muốn xóa vĩnh viễn mục này khỏi Database?')) {
 							if (!currentUser) return;
 							try {
-								// Xóa Document từ DB
 								await deleteDoc(
-									doc(
-										db,
-										'artifacts',
-										appId,
-										'users',
-										currentUser.uid,
-										'assets',
-										docId,
-									),
+									doc(db, 'artifacts', appId, 'public', 'data', 'assets', docId),
 								);
 								showToast('Đã xóa thành công khỏi Database', 'bg-red-600');
 							} catch (err) {
@@ -920,7 +647,6 @@
 			searchInput.addEventListener('input', renderList);
 			filterSelect.addEventListener('change', renderList);
 
-			// Add New to DB
 			addForm.addEventListener('submit', async (e) => {
 				e.preventDefault();
 				if (!currentUser) return;
@@ -933,13 +659,12 @@
 				const desc = document.getElementById('inputDesc').value;
 
 				try {
-					// Thêm Document mới vào Collection (kèm theo Ngày tháng tạo createdAt)
 					const assetsCollectionRef = collection(
 						db,
 						'artifacts',
 						appId,
-						'users',
-						currentUser.uid,
+						'public',
+						'data',
 						'assets',
 					);
 					await addDoc(assetsCollectionRef, {
@@ -951,7 +676,6 @@
 
 					showToast('Đã lưu dữ liệu lên Cloud Database!', 'bg-green-600');
 
-					// Reset form
 					document.getElementById('inputTime').value = '';
 					document.getElementById('inputDesc').value = '';
 					document.getElementById('inputTime').focus();
@@ -964,7 +688,6 @@
 				}
 			});
 
-			// Copy to Clipboard Fallback
 			function handleCopy(text) {
 				if (navigator.clipboard && window.isSecureContext) {
 					navigator.clipboard
@@ -988,7 +711,6 @@
 				}
 			}
 
-			// Toast Notification System
 			function showToast(message, bgColorClass = 'bg-slate-700') {
 				const container = document.getElementById('toastContainer');
 				const toast = document.createElement('div');
