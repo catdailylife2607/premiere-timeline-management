@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Premiere Timeline Asset Manager - Global Sync</title>
+		<title>Premiere Timeline Asset Manager - Cloudinary Sync</title>
 		<script src="https://cdn.tailwindcss.com"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 		<style>
@@ -82,7 +82,7 @@
 					<h1 class="text-xl font-bold text-white tracking-wide">
 						🎬 TIMELINE ASSET MANAGER
 					</h1>
-					<p class="text-xs text-slate-400">Project Premiere: Global Cloud Sync</p>
+					<p class="text-xs text-slate-400">Project Premiere: Firestore + Cloudinary</p>
 				</div>
 				<div
 					id="syncStatus"
@@ -132,13 +132,23 @@
 						</div>
 						<div>
 							<label class="block text-xs text-slate-400 mb-1"
-								>Timestamp (HH:MM:SS:FF)</label
+								>Bắt đầu (Timestamp)</label
 							>
 							<input
 								type="text"
 								id="inputTime"
-								placeholder="VD: 01:15:01 hoặc 00:08:45:16"
+								placeholder="VD: 01:15:01"
 								required
+								class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white font-mono focus:outline-none focus:border-praccent" />
+						</div>
+						<div>
+							<label class="block text-xs text-slate-400 mb-1"
+								>Kết thúc (Không bắt buộc)</label
+							>
+							<input
+								type="text"
+								id="inputEndTime"
+								placeholder="VD: 01:15:15"
 								class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white font-mono focus:outline-none focus:border-praccent" />
 						</div>
 						<div>
@@ -151,6 +161,19 @@
 								placeholder="Tên âm thanh/meme..."
 								required
 								class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white focus:outline-none focus:border-praccent" />
+						</div>
+						<div>
+							<label class="block text-xs text-slate-400 mb-1"
+								>File Âm thanh/Video (Sẽ up lên Cloudinary)</label
+							>
+							<input
+								type="file"
+								id="inputFile"
+								accept="audio/*,video/*"
+								class="w-full bg-slate-800 border border-slate-600 rounded p-1 text-sm text-slate-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-praccent file:text-white hover:file:bg-blue-600 cursor-pointer" />
+							<p id="editFileHint" class="text-[10px] text-emerald-400 mt-1 hidden">
+								Đã có file đính kèm. Tải lên file mới để ghi đè thay thế.
+							</p>
 						</div>
 						<div class="flex gap-2 mt-2">
 							<button
@@ -190,9 +213,20 @@
 						<select
 							id="filterSelect"
 							class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white focus:outline-none focus:border-praccent">
-							<option value="All">Tất cả (All)</option>
+							<option value="All">Mọi thể loại</option>
 							<option value="SFX">Chỉ SFX</option>
 							<option value="Meme">Chỉ Meme</option>
+						</select>
+					</div>
+					<div class="w-full sm:w-48 shrink-0">
+						<select
+							id="durationFilter"
+							class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white focus:outline-none focus:border-praccent">
+							<option value="All">Mọi thời lượng</option>
+							<option value="short">&lt; 5 giây</option>
+							<option value="medium">5 - 15 giây</option>
+							<option value="long">&gt; 15 giây</option>
+							<option value="unknown">Chưa có độ dài</option>
 						</select>
 					</div>
 				</div>
@@ -202,10 +236,11 @@
 					id="sortContainer"></div>
 
 				<div
-					class="grid grid-cols-12 gap-4 px-6 py-2 bg-slate-800 text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
-					<div class="col-span-2 text-center">Type</div>
-					<div class="col-span-2">Timestamp</div>
-					<div class="col-span-4">Description</div>
+					class="grid grid-cols-12 gap-3 px-6 py-2 bg-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+					<div class="col-span-1 text-center">Type</div>
+					<div class="col-span-2">Bắt đầu</div>
+					<div class="col-span-2">Thời lượng</div>
+					<div class="col-span-3">Description</div>
 					<div class="col-span-2">Ngày thêm</div>
 					<div class="col-span-2 text-right">Hành động</div>
 				</div>
@@ -220,6 +255,23 @@
 				</div>
 			</section>
 		</main>
+
+		<!-- VIDEO PLAYER MODAL -->
+		<div
+			id="videoModal"
+			class="fixed inset-0 z-50 hidden bg-black/80 flex items-center justify-center p-4">
+			<div
+				class="relative bg-prpanel rounded-lg shadow-2xl border border-slate-700 p-2 max-w-4xl w-full">
+				<button
+					id="closeVideoBtn"
+					class="absolute -top-4 -right-4 bg-red-600 hover:bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg border-2 border-slate-800 z-10 transition-colors">
+					✕
+				</button>
+				<video id="videoPlayer" class="w-full rounded bg-black max-h-[80vh]" controls>
+					Trình duyệt của bạn không hỗ trợ thẻ video.
+				</video>
+			</div>
+		</div>
 
 		<div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
@@ -241,15 +293,26 @@
 				onSnapshot,
 			} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-			// BẠN ĐIỀN API KEY CỦA BẠN VÀO ĐÂY:
+			// ==========================================
+			// 1. CẤU HÌNH FIREBASE FIRESTORE (Database Text)
+			// ==========================================
 			const firebaseConfig = {
-				apiKey: 'AIzaSyCxXis-5gNCy18sBM2iTAw6T5IfbpcKi8o',
+				apiKey: 'AIzaSyCxXis-5gNCy18sBM2iTAw6T5IfbpcKi8o', // Điền lại API Key Firebase
 				authDomain: 'premiere-timeline-manager.firebaseapp.com',
 				projectId: 'premiere-timeline-manager',
 				storageBucket: 'premiere-timeline-manager.firebasestorage.app',
 				messagingSenderId: '652254716656',
 				appId: '1:652254716656:web:dd5f1794a8fd72b9c49835',
 			};
+
+			// ==========================================
+			// 2. CẤU HÌNH CLOUDINARY (Database Audio/Video)
+			// ==========================================
+			const cloudinaryConfig = {
+				cloudName: 'dwuwomfrs', // Ví dụ: 'dx123abc'
+				uploadPreset: 'my premiere project', // Ví dụ: 'my_preset'
+			};
+
 			const envConfig =
 				typeof __firebase_config !== 'undefined'
 					? JSON.parse(__firebase_config)
@@ -267,22 +330,39 @@
 
 			let currentUser = null;
 			let editingId = null;
+			window.currentAudio = null;
+			window.currentAudioUrl = null; // Biến phụ trợ lưu URL chuẩn để tránh lỗi string escape khi so sánh
+
+			// Xử lý Modal Video
+			const videoModal = document.getElementById('videoModal');
+			const closeVideoBtn = document.getElementById('closeVideoBtn');
+			const videoPlayer = document.getElementById('videoPlayer');
+
+			closeVideoBtn.addEventListener('click', () => {
+				videoModal.classList.add('hidden');
+				videoPlayer.pause();
+				videoPlayer.src = '';
+			});
 
 			class Asset {
-				constructor(id, type, rawTime, desc, createdAt) {
+				constructor(id, type, rawTime, desc, createdAt, rawEndTime = '', fileUrl = '') {
 					this.id = id;
 					this.type = type;
 					this.rawTime = rawTime;
+					this.rawEndTime = rawEndTime;
 					this.desc = desc;
 					this.createdAt = createdAt || 0;
+					this.fileUrl = fileUrl;
 
 					this.normalized = this.parseTime(rawTime);
 					this.displayTime = this.formatDisplayTime();
 					this.sortValue = this.calculateSortValue();
 					this.displayDate = this.formatCreationDate(this.createdAt);
+					this.durationSeconds = this.calculateDurationSeconds();
 				}
 
 				parseTime(t) {
+					if (!t) return [0, 0, 0, 0];
 					let parts = t.split(':').map(Number);
 					let h = 0,
 						m = 0,
@@ -319,6 +399,39 @@
 					return h * 3600 * 60 + m * 60 * 60 + s * 60 + f;
 				}
 
+				calculateDurationSeconds() {
+					if (!this.rawEndTime) return -1;
+					let endNorm = this.parseTime(this.rawEndTime);
+					let endFrames =
+						endNorm[0] * 3600 * 60 +
+						endNorm[1] * 60 * 60 +
+						endNorm[2] * 60 +
+						endNorm[3];
+					let diff = endFrames - this.sortValue;
+					if (diff < 0) return -1;
+					return diff / 60;
+				}
+
+				getDurationString() {
+					if (this.durationSeconds === -1) return '---';
+					if (this.durationSeconds === 0) return '0s';
+
+					let diff = Math.round(this.durationSeconds * 60);
+					const pad = (num) => num.toString().padStart(2, '0');
+
+					let f = diff % 60;
+					diff = Math.floor(diff / 60);
+					let s = diff % 60;
+					diff = Math.floor(diff / 60);
+					let m = diff % 60;
+					diff = Math.floor(diff / 60);
+					let h = diff;
+
+					if (h > 0) return `${pad(h)}:${pad(m)}:${pad(s)}:${pad(f)}`;
+					if (m > 0) return `${pad(m)}:${pad(s)}:${pad(f)}`;
+					return `${pad(s)}:${pad(f)}`;
+				}
+
 				formatCreationDate(ts) {
 					if (!ts || ts === 0) return '---';
 					const d = new Date(ts);
@@ -326,7 +439,7 @@
 				}
 
 				getCopyString() {
-					return `- ${this.displayTime}: ${this.desc}`;
+					return `${this.displayTime}`;
 				}
 			}
 
@@ -336,6 +449,7 @@
 			const listEl = document.getElementById('assetList');
 			const searchInput = document.getElementById('searchInput');
 			const filterSelect = document.getElementById('filterSelect');
+			const durationFilter = document.getElementById('durationFilter');
 			const addForm = document.getElementById('addForm');
 			const formTitle = document.getElementById('formTitle');
 			const countDisplay = document.getElementById('totalCountDisplay');
@@ -412,6 +526,8 @@
 												data.rawTime,
 												data.desc,
 												data.createdAt,
+												data.rawEndTime || '',
+												data.fileUrl || '',
 											),
 										);
 									});
@@ -443,6 +559,7 @@
 				{ key: 'type', label: 'Type' },
 				{ key: 'desc', label: 'Tên (A-Z)' },
 				{ key: 'sortValue', label: 'Timestamp' },
+				{ key: 'durationSeconds', label: 'Thời lượng' },
 				{ key: 'createdAt', label: 'Ngày thêm' },
 			];
 
@@ -494,13 +611,22 @@
 			function renderList() {
 				const searchTerm = searchInput.value.toLowerCase();
 				const typeFilter = filterSelect.value;
+				const durFilter = durationFilter.value;
 
 				let filteredData = memoryAssets.filter((asset) => {
 					const matchType = typeFilter === 'All' || asset.type === typeFilter;
 					const matchSearch =
 						asset.desc.toLowerCase().includes(searchTerm) ||
 						asset.displayTime.includes(searchTerm);
-					return matchType && matchSearch;
+
+					let matchDuration = true;
+					const sec = asset.durationSeconds;
+					if (durFilter === 'short') matchDuration = sec >= 0 && sec < 5;
+					else if (durFilter === 'medium') matchDuration = sec >= 5 && sec <= 15;
+					else if (durFilter === 'long') matchDuration = sec > 15;
+					else if (durFilter === 'unknown') matchDuration = sec === -1;
+
+					return matchType && matchSearch && matchDuration;
 				});
 
 				if (activeSorts.length > 0) {
@@ -527,7 +653,7 @@
 				listEl.innerHTML = '';
 
 				if (filteredData.length === 0) {
-					listEl.innerHTML = `<div class="p-8 text-center text-slate-500 italic">Không tìm thấy Document nào trong cơ sở dữ liệu.</div>`;
+					listEl.innerHTML = `<div class="p-8 text-center text-slate-500 italic">Không tìm thấy Document nào khớp với bộ lọc.</div>`;
 				}
 
 				filteredData.forEach((asset) => {
@@ -541,7 +667,7 @@
 						: 'bg-slate-800/40 border-transparent hover:bg-slate-700/60 hover:border-slate-600';
 
 					const row = document.createElement('div');
-					row.className = `group grid grid-cols-12 gap-4 items-center px-4 py-3 border rounded transition-all cursor-pointer ${rowBg}`;
+					row.className = `group grid grid-cols-12 gap-3 items-center px-4 py-3 border rounded transition-all cursor-pointer ${rowBg}`;
 
 					row.onclick = (e) => {
 						if (!e.target.closest('button')) {
@@ -549,28 +675,49 @@
 						}
 					};
 
+					let durationDisplay = asset.getDurationString();
+					let durationHTML =
+						durationDisplay === '---'
+							? `<span class="text-slate-500">---</span>`
+							: `<span class="text-fuchsia-300 bg-fuchsia-900/30 px-1 rounded border border-fuchsia-800/50 flex items-center gap-1 w-max"><span class="text-[9px]">⏱️</span>${durationDisplay}</span>`;
+
+					let playBtnHTML = '';
+					if (asset.fileUrl) {
+						// SỬA LỖI 1: Ép kiểu boolean để lưu giá trị HTML data-video="true/false" chuẩn xác
+						const isVideoFile =
+							Boolean(asset.fileUrl.match(/\.(mp4|webm|mov|mkv)$/i)) ||
+							asset.type === 'Meme';
+						const playIcon = isVideoFile ? '🎬 Xem' : '▶ Phát';
+
+						playBtnHTML = `<button class="play-btn text-xs bg-emerald-900/60 hover:bg-emerald-600 px-2 py-1 rounded text-white transition-colors shadow border border-emerald-700/50" data-url="${asset.fileUrl}" data-video="${isVideoFile}" title="Nghe thử/Xem thử">${playIcon}</button>`;
+					}
+
 					row.innerHTML = `
-                    <div class="col-span-2 text-center">
-                        <span class="text-xs px-2 py-1 rounded border ${typeColor} font-bold shadow-sm">${asset.type}</span>
-                    </div>
-                    <div class="col-span-2 font-mono text-sm text-blue-200 group-hover:text-blue-100 transition-colors">
-                        ${asset.displayTime}
-                    </div>
-                    <div class="col-span-4 text-sm text-slate-300 break-words whitespace-normal">
-                        ${asset.desc}
-                    </div>
-                    <div class="col-span-2 text-[11px] text-slate-400 font-mono tracking-tighter">
-                        ${asset.displayDate}
-                    </div>
-                    <div class="col-span-2 flex justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                        <button class="edit-btn text-xs bg-blue-900/60 hover:bg-blue-600 px-2 py-1 rounded text-white transition-colors shadow border border-blue-700/50" data-id="${asset.id}" title="Chỉnh sửa">
-                            ✏️
-                        </button>
-                        <button class="delete-btn text-xs bg-red-900/50 hover:bg-red-600 px-2 py-1 rounded text-white transition-colors border border-red-800 hover:border-red-500" data-id="${asset.id}" title="Xóa khỏi Database">
-                            ✕
-                        </button>
-                    </div>
-                `;
+						<div class="col-span-1 text-center">
+							<span class="text-[10px] px-1.5 py-0.5 rounded border ${typeColor} font-bold shadow-sm">${asset.type}</span>
+						</div>
+						<div class="col-span-2 font-mono text-sm text-blue-200 group-hover:text-blue-100 transition-colors">
+							${asset.displayTime}
+						</div>
+						<div class="col-span-2 font-mono text-xs">
+							${durationHTML}
+						</div>
+						<div class="col-span-3 text-sm text-slate-300 break-words whitespace-normal">
+							${asset.desc}
+						</div>
+						<div class="col-span-2 text-[11px] text-slate-400 font-mono tracking-tighter">
+							${asset.displayDate}
+						</div>
+						<div class="col-span-2 flex justify-end gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
+							${playBtnHTML}
+							<button class="edit-btn text-xs bg-blue-900/60 hover:bg-blue-600 px-2 py-1 rounded text-white transition-colors shadow border border-blue-700/50" data-id="${asset.id}" title="Chỉnh sửa">
+								✏️
+							</button>
+							<button class="delete-btn text-xs bg-red-900/50 hover:bg-red-600 px-2 py-1 rounded text-white transition-colors border border-red-800 hover:border-red-500" data-id="${asset.id}" title="Xóa khỏi Database">
+								✕
+							</button>
+						</div>
+					`;
 					listEl.appendChild(row);
 				});
 
@@ -584,7 +731,11 @@
 							return;
 						}
 
-						if (confirm('Bạn có chắc muốn xóa vĩnh viễn mục này khỏi Database?')) {
+						if (
+							confirm(
+								'Bạn có chắc muốn xóa vĩnh viễn mục này khỏi Database? (Lưu ý: File media trên Cloudinary cần được xóa thủ công trên bảng điều khiển Cloudinary)',
+							)
+						) {
 							if (!currentUser) return;
 							try {
 								await deleteDoc(
@@ -610,7 +761,15 @@
 
 							document.getElementById('inputType').value = assetToEdit.type;
 							document.getElementById('inputTime').value = assetToEdit.rawTime;
+							document.getElementById('inputEndTime').value =
+								assetToEdit.rawEndTime || '';
 							document.getElementById('inputDesc').value = assetToEdit.desc;
+
+							if (assetToEdit.fileUrl) {
+								document.getElementById('editFileHint').classList.remove('hidden');
+							} else {
+								document.getElementById('editFileHint').classList.add('hidden');
+							}
 
 							formTitle.innerHTML = '✏️ Chỉnh sửa Asset';
 							formTitle.classList.replace('text-slate-300', 'text-green-400');
@@ -626,6 +785,62 @@
 								.getElementById('addForm')
 								.scrollIntoView({ behavior: 'smooth' });
 						}
+					};
+				});
+
+				document.querySelectorAll('.play-btn').forEach((btn) => {
+					btn.onclick = (e) => {
+						e.stopPropagation();
+						// SỬA LỖI 2: Lưu thẳng biến btnElement để dùng nội bộ, tránh việc nó bị gỡ mất (null) sau khi tải xong sự kiện
+						const btnElement = e.currentTarget;
+						const url = btnElement.getAttribute('data-url');
+						const isVideo = btnElement.getAttribute('data-video') === 'true';
+
+						if (isVideo) {
+							if (window.currentAudio) {
+								window.currentAudio.pause();
+								document
+									.querySelectorAll('.play-btn[data-video="false"]')
+									.forEach((b) => {
+										b.innerHTML = '▶ Phát';
+										b.classList.replace('bg-rose-600', 'bg-emerald-900/60');
+									});
+							}
+							videoPlayer.src = url;
+							videoModal.classList.remove('hidden');
+							videoPlayer.play();
+							return;
+						}
+
+						if (window.currentAudio) {
+							// Check xem có phải bấm vào chính bài đang phát không
+							// Đã sửa so sánh bằng biến window.currentAudioUrl thay vì src để tránh lỗi mã hóa %20
+							if (window.currentAudioUrl === url && !window.currentAudio.paused) {
+								window.currentAudio.pause();
+								btnElement.innerHTML = '▶ Phát';
+								btnElement.classList.replace('bg-rose-600', 'bg-emerald-900/60');
+								return;
+							}
+
+							window.currentAudio.pause();
+							document
+								.querySelectorAll('.play-btn[data-video="false"]')
+								.forEach((b) => {
+									b.innerHTML = '▶ Phát';
+									b.classList.replace('bg-rose-600', 'bg-emerald-900/60');
+								});
+						}
+
+						window.currentAudioUrl = url;
+						window.currentAudio = new Audio(url);
+						window.currentAudio.play();
+						btnElement.innerHTML = '⏸ Dừng';
+						btnElement.classList.replace('bg-emerald-900/60', 'bg-rose-600');
+
+						window.currentAudio.onended = () => {
+							btnElement.innerHTML = '▶ Phát';
+							btnElement.classList.replace('bg-rose-600', 'bg-emerald-900/60');
+						};
 					};
 				});
 			}
@@ -690,9 +905,13 @@
 				editingId = null;
 				addForm.reset();
 
+				document.getElementById('inputFile').value = '';
+				document.getElementById('editFileHint').classList.add('hidden');
+
 				formTitle.innerHTML = '➕ Lưu lên Cloud';
 				formTitle.classList.replace('text-green-400', 'text-slate-300');
 
+				submitBtn.disabled = false;
 				submitBtn.innerHTML = '+ Thêm';
 				submitBtn.classList.replace('bg-green-600', 'bg-praccent');
 				submitBtn.classList.replace('hover:bg-green-500', 'hover:bg-blue-600');
@@ -703,6 +922,7 @@
 
 			searchInput.addEventListener('input', renderList);
 			filterSelect.addEventListener('change', renderList);
+			durationFilter.addEventListener('change', renderList);
 			cancelEditBtn.addEventListener('click', resetForm);
 
 			addForm.addEventListener('submit', async (e) => {
@@ -710,13 +930,70 @@
 				if (!currentUser) return;
 
 				submitBtn.disabled = true;
-				submitBtn.innerHTML = '⏳ Đang lưu...';
+				submitBtn.innerHTML = '⏳ Đang khởi tạo...';
 
 				const type = document.getElementById('inputType').value;
 				const time = document.getElementById('inputTime').value;
+				const endTime = document.getElementById('inputEndTime').value;
 				const desc = document.getElementById('inputDesc').value;
+				const fileInput = document.getElementById('inputFile');
+				const file = fileInput.files[0];
+
+				let currentFileUrl = '';
+				if (editingId) {
+					const editingAsset = memoryAssets.find((a) => a.id === editingId);
+					if (editingAsset) currentFileUrl = editingAsset.fileUrl;
+				}
 
 				try {
+					// NẾU CÓ FILE: Tải lên Cloudinary thông qua XMLHttpRequest để theo dõi %
+					if (file) {
+						if (
+							!cloudinaryConfig.cloudName ||
+							!cloudinaryConfig.uploadPreset ||
+							cloudinaryConfig.cloudName.includes('ĐIỀN')
+						) {
+							throw new Error('Bạn chưa thiết lập cấu hình Cloudinary ở dòng 301!');
+						}
+
+						const formData = new FormData();
+						formData.append('file', file);
+						formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+
+						await new Promise((resolve, reject) => {
+							const xhr = new XMLHttpRequest();
+							// Endpoint cho auto (tự nhận diện âm thanh hay video)
+							xhr.open(
+								'POST',
+								`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/auto/upload`,
+							);
+
+							xhr.upload.onprogress = (e) => {
+								if (e.lengthComputable) {
+									const progress = (e.loaded / e.total) * 100;
+									submitBtn.innerHTML = `⏳ Đang đẩy lên Cloudinary (${Math.round(progress)}%)...`;
+								}
+							};
+
+							xhr.onload = () => {
+								if (xhr.status === 200) {
+									const response = JSON.parse(xhr.responseText);
+									currentFileUrl = response.secure_url; // Lấy URL an toàn
+									resolve();
+								} else {
+									reject(new Error(`Upload failed: ${xhr.responseText}`));
+								}
+							};
+
+							xhr.onerror = () =>
+								reject(new Error('Lỗi mạng khi tải lên Cloudinary'));
+							xhr.send(formData);
+						});
+
+						submitBtn.innerHTML = '⏳ Đang lưu DB...';
+					}
+
+					// Lưu thông tin văn bản và URL (Cloudinary) vào Firestore
 					if (editingId) {
 						const docRef = doc(
 							db,
@@ -727,7 +1004,13 @@
 							'assets',
 							editingId,
 						);
-						await updateDoc(docRef, { type: type, rawTime: time, desc: desc });
+						await updateDoc(docRef, {
+							type: type,
+							rawTime: time,
+							rawEndTime: endTime,
+							desc: desc,
+							fileUrl: currentFileUrl,
+						});
 						showToast('Đã cập nhật thay đổi!', 'bg-green-600');
 					} else {
 						const assetsCollectionRef = collection(
@@ -741,15 +1024,17 @@
 						await addDoc(assetsCollectionRef, {
 							type: type,
 							rawTime: time,
+							rawEndTime: endTime,
 							desc: desc,
+							fileUrl: currentFileUrl,
 							createdAt: Date.now(),
 						});
-						showToast('Đã thêm dữ liệu mới lên DB!', 'bg-green-600');
+						showToast('Đã thêm dữ liệu và File đính kèm lên DB!', 'bg-green-600');
 					}
 					resetForm();
 					document.getElementById('inputTime').focus();
 				} catch (err) {
-					showToast('Lỗi lưu Database!', 'bg-red-600');
+					showToast(err.message || 'Lỗi tải file / lưu DB!', 'bg-red-600');
 					console.error(err);
 					submitBtn.disabled = false;
 					submitBtn.innerHTML = editingId ? '💾 Cập nhật' : '+ Thêm';
