@@ -163,6 +163,60 @@
 								class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-sm text-white focus:outline-none focus:border-praccent" />
 						</div>
 						<div>
+							<label class="block text-xs text-slate-400 mb-1">Tags</label>
+							<div class="flex flex-wrap gap-1 mb-1.5" id="formTagsContainer"></div>
+							<div class="relative">
+								<button
+									type="button"
+									id="openFormTagPopupBtn"
+									class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold py-1.5 px-3 rounded border border-slate-600 transition-colors flex justify-between items-center shadow-sm">
+									<span>🏷️ Quản lý Tags</span>
+									<span class="text-[10px]">▼</span>
+								</button>
+
+								<!-- POPUP QUẢN LÝ TAGS CỦA FORM -->
+								<div
+									id="formTagPopup"
+									class="hidden fixed bg-prpanel border border-slate-600 rounded-lg shadow-2xl flex flex-col p-3 z-[60]"
+									style="
+										min-height: 350px;
+										max-height: 60vh;
+										width: 300px;
+										resize: horizontal;
+										overflow: hidden;
+									">
+									<div class="flex justify-between items-center mb-2 shrink-0">
+										<span class="text-sm font-semibold text-slate-300"
+											>Chọn / Tạo Tag mới</span
+										>
+									</div>
+									<input
+										type="text"
+										id="searchFormTag"
+										placeholder="Tìm hoặc nhập tag mới..."
+										class="bg-slate-900 border border-slate-600 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-praccent w-full shrink-0 mb-2" />
+									<div
+										id="formPopupTagsList"
+										class="flex flex-wrap gap-1.5 flex-1 overflow-y-auto content-start custom-scrollbar p-1"></div>
+									<div
+										class="flex justify-end gap-2 mt-3 pt-2 border-t border-slate-700 shrink-0">
+										<button
+											type="button"
+											id="cancelFormTagsBtn"
+											class="bg-slate-600 hover:bg-slate-500 text-white text-xs px-3 py-1.5 rounded font-bold transition-colors">
+											Hủy
+										</button>
+										<button
+											type="button"
+											id="applyFormTagsBtn"
+											class="bg-praccent hover:bg-blue-600 text-white text-xs px-4 py-1.5 rounded font-bold transition-colors shadow-lg">
+											✓ Thêm
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div>
 							<label class="block text-xs text-slate-400 mb-1"
 								>File Âm thanh/Video (Sẽ up lên Cloudinary)</label
 							>
@@ -174,6 +228,12 @@
 							<p id="editFileHint" class="text-[10px] text-emerald-400 mt-1 hidden">
 								Đã có file đính kèm. Tải lên file mới để ghi đè thay thế.
 							</p>
+							<button
+								type="button"
+								id="formPlayBtn"
+								class="hidden mt-2 w-full bg-emerald-900/60 hover:bg-emerald-600 text-white text-xs font-bold py-1.5 px-3 rounded border border-emerald-700 transition-colors flex justify-center items-center gap-1">
+								▶ Nghe / Xem thử File
+							</button>
 						</div>
 						<div class="flex gap-2 mt-2">
 							<button
@@ -230,10 +290,66 @@
 						</select>
 					</div>
 				</div>
-
+				<!-- THANH CÔNG CỤ: TAGS & SORT -->
 				<div
-					class="px-4 py-2 bg-slate-800/80 border-b border-slate-700 flex items-center gap-2 text-xs shrink-0 flex-wrap"
-					id="sortContainer"></div>
+					class="px-4 py-2 bg-slate-800/80 border-b border-slate-700 flex items-center gap-2 text-xs shrink-0 relative overflow-visible z-40">
+					<!-- 1. Khu vực Nút Tags -->
+					<span class="text-slate-400 font-semibold">Tags:</span>
+					<button
+						id="tagFilterBtn"
+						class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1 rounded border border-transparent transition-colors shadow-sm cursor-pointer relative">
+						🏷️ Lọc Tags
+					</button>
+
+					<!-- 2. Popup Lọc Tags (Có thể kéo dãn) -->
+					<!-- resize: both giúp kéo dãn 2 chiều. overflow: hidden cho thẻ cha để không bị lòi phần tử con -->
+					<div
+						id="tagFilterPopup"
+						class="hidden absolute top-[110%] left-4 bg-prpanel border border-slate-600 rounded-lg shadow-2xl flex flex-col p-3 z-50"
+						style="
+							min-width: 250px;
+							min-height: 200px;
+							max-height: 60vh;
+							resize: both;
+							overflow: hidden;
+						">
+						<!-- Header (Cố định) -->
+						<div class="flex justify-between items-center mb-2 shrink-0">
+							<span class="text-sm font-semibold text-slate-300"
+								>Chọn Tags để lọc</span
+							>
+							<div class="flex items-center gap-3">
+								<!-- Thêm nút Bỏ chọn tất cả -->
+								<button
+									id="clearAllTagsBtn"
+									class="text-xs text-red-400 hover:text-red-300 transition-colors cursor-pointer hidden">
+									✕ Bỏ chọn tất cả
+								</button>
+								<button
+									id="closeTagPopupBtn"
+									class="text-slate-400 hover:text-red-400 text-lg font-bold transition-colors cursor-pointer leading-none">
+									✕
+								</button>
+							</div>
+						</div>
+						<!-- Ô Search (Cố định) -->
+						<input
+							type="text"
+							id="searchTagFilter"
+							placeholder="Tìm tag..."
+							class="bg-slate-900 border border-slate-600 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-praccent w-full shrink-0 mb-2" />
+						<!-- Danh sách Tags (Tự động cuộn khi quá dài) -->
+						<div
+							id="filterTagsContainer"
+							class="flex flex-wrap gap-1.5 flex-1 overflow-y-auto content-start custom-scrollbar p-1"></div>
+					</div>
+
+					<!-- 3. Vách ngăn -->
+					<span class="text-slate-600 mx-2 font-bold text-sm">|</span>
+
+					<!-- 4. Khu vực Sort cũ -->
+					<div id="sortContainer" class="flex items-center gap-2"></div>
+				</div>
 
 				<div
 					class="grid grid-cols-12 gap-3 px-6 py-2 bg-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
@@ -273,6 +389,32 @@
 			</div>
 		</div>
 
+		<!-- MODAL XÁC NHẬN XÓA TAG VĨNH VIỄN -->
+		<div
+			id="deleteTagModal"
+			class="fixed inset-0 z-[60] hidden bg-black/80 flex items-center justify-center p-4">
+			<div
+				class="bg-prpanel rounded-lg shadow-2xl border border-slate-700 p-5 max-w-sm w-full text-center">
+				<h3 class="text-lg font-bold text-white mb-2">⚠️ Xác nhận xóa Tag</h3>
+				<p class="text-sm text-slate-300 mb-4">
+					Bạn có chắc chắn muốn xóa vĩnh viễn tag
+					<span id="tagToDeleteName" class="font-bold text-red-400 text-base mx-1"></span
+					>? Các File đang dùng tag này sẽ tự động bị gỡ bỏ tag.
+				</p>
+				<div class="flex justify-center gap-3">
+					<button
+						id="cancelDeleteTagBtn"
+						class="bg-slate-600 hover:bg-slate-500 text-white px-4 py-2 rounded text-sm font-bold transition-colors">
+						Hủy
+					</button>
+					<button
+						id="confirmDeleteTagBtn"
+						class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded text-sm font-bold transition-colors shadow-lg shadow-red-900/50">
+						Xóa vĩnh viễn
+					</button>
+				</div>
+			</div>
+		</div>
 		<div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
 		<script type="module">
@@ -345,7 +487,16 @@
 			});
 
 			class Asset {
-				constructor(id, type, rawTime, desc, createdAt, rawEndTime = '', fileUrl = '') {
+				constructor(
+					id,
+					type,
+					rawTime,
+					desc,
+					createdAt,
+					rawEndTime = '',
+					fileUrl = '',
+					tags = [],
+				) {
 					this.id = id;
 					this.type = type;
 					this.rawTime = rawTime;
@@ -353,6 +504,7 @@
 					this.desc = desc;
 					this.createdAt = createdAt || 0;
 					this.fileUrl = fileUrl;
+					this.tags = Array.isArray(tags) && tags.length > 0 ? tags : [type];
 
 					this.normalized = this.parseTime(rawTime);
 					this.displayTime = this.formatDisplayTime();
@@ -446,6 +598,14 @@
 			let memoryAssets = [];
 			let myChart = null;
 
+			let formTags = [];
+			let previousType = 'SFX'; // Để theo dõi thay đổi Type
+			let localFileToPlay = null; // Lưu file local để Play
+			let allAvailableTags = new Set(); // Chứa toàn bộ tags trong DB
+			let selectedFilterTags = []; // Chứa các tag đang được chọn để lọc
+			let tempFormTags = []; // Lưu tags nháp khi mở popup form
+			let tagToDelete = null; // Lưu tag chuẩn bị bị xóa vĩnh viễn
+
 			const listEl = document.getElementById('assetList');
 			const searchInput = document.getElementById('searchInput');
 			const filterSelect = document.getElementById('filterSelect');
@@ -528,6 +688,7 @@
 												data.createdAt,
 												data.rawEndTime || '',
 												data.fileUrl || '',
+												data.tags,
 											),
 										);
 									});
@@ -608,6 +769,90 @@
 				container.innerHTML = html;
 			}
 
+			function renderFormTags() {
+				const container = document.getElementById('formTagsContainer');
+				container.innerHTML = formTags
+					.map(
+						(tag, index) => `
+					<span class="bg-indigo-900/60 text-indigo-200 border border-indigo-700 text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
+						${tag} <button type="button" class="text-red-400 hover:text-red-300 font-bold ml-1" onclick="removeFormTag(${index})">×</button>
+					</span>
+				`,
+					)
+					.join('');
+			}
+
+			window.removeFormTag = function (index) {
+				formTags.splice(index, 1);
+				renderFormTags();
+			};
+
+			function renderTagFilters() {
+				const container = document.getElementById('filterTagsContainer');
+				const searchVal = document.getElementById('searchTagFilter').value.toLowerCase();
+
+				// Cập nhật allAvailableTags từ danh sách gốc
+				allAvailableTags.clear();
+				memoryAssets.forEach((a) => a.tags.forEach((t) => allAvailableTags.add(t)));
+
+				let tagsArray = Array.from(allAvailableTags).filter((t) =>
+					t.toLowerCase().includes(searchVal),
+				);
+
+				container.innerHTML = tagsArray
+					.map((tag) => {
+						const isActive = selectedFilterTags.includes(tag);
+						const bgClass = isActive
+							? 'bg-praccent text-white border-blue-400'
+							: 'bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700';
+
+						return `
+					<div class="flex items-center rounded border transition-colors ${bgClass} overflow-hidden shadow-sm">
+						<button onclick="window.toggleFilterTag('${tag}')" class="text-[11px] px-2 py-1 h-full">${tag}</button>
+						<button onclick="window.confirmDeleteTag('${tag}', event)" class="px-1.5 py-1 text-[10px] bg-black/20 hover:bg-red-600 hover:text-white border-l border-black/10 transition-colors h-full" title="Xóa tag này">✕</button>
+					</div>
+					`;
+					})
+					.join('');
+
+				const tagBtn = document.getElementById('tagFilterBtn');
+				const clearBtn = document.getElementById('clearAllTagsBtn');
+				if (selectedFilterTags.length > 0) {
+					clearBtn.classList.remove('hidden');
+					tagBtn.innerHTML = `🏷️ Tags (${selectedFilterTags.length})`;
+					tagBtn.classList.replace('bg-slate-700', 'bg-praccent');
+					tagBtn.classList.replace('text-slate-300', 'text-white');
+				} else {
+					clearBtn.classList.add('hidden');
+					tagBtn.innerHTML = `🏷️ Lọc Tags`;
+					tagBtn.classList.replace('bg-praccent', 'bg-slate-700');
+					tagBtn.classList.replace('text-white', 'text-slate-300');
+				}
+			}
+
+			window.toggleFilterTag = function (tag) {
+				const idx = selectedFilterTags.indexOf(tag);
+				if (idx > -1) selectedFilterTags.splice(idx, 1);
+				else selectedFilterTags.push(tag);
+				updateUI();
+			};
+
+			function updateFormPlayBtn() {
+				const btn = document.getElementById('formPlayBtn');
+				if (
+					localFileToPlay ||
+					(editingId && memoryAssets.find((a) => a.id === editingId)?.fileUrl)
+				) {
+					btn.classList.remove('hidden');
+				} else {
+					btn.classList.add('hidden');
+					if (window.formAudio) {
+						window.formAudio.pause();
+						btn.innerHTML = '▶ Nghe / Xem thử File';
+					}
+				}
+			}
+
 			function renderList() {
 				const searchTerm = searchInput.value.toLowerCase();
 				const typeFilter = filterSelect.value;
@@ -626,7 +871,12 @@
 					else if (durFilter === 'long') matchDuration = sec > 15;
 					else if (durFilter === 'unknown') matchDuration = sec === -1;
 
-					return matchType && matchSearch && matchDuration;
+					let matchTags = true;
+					if (selectedFilterTags.length > 0) {
+						// Logic OR: Asset phải chứa ít nhất 1 tag nằm trong mảng selectedFilterTags
+						matchTags = asset.tags.some((t) => selectedFilterTags.includes(t));
+					}
+					return matchType && matchSearch && matchDuration && matchTags;
 				});
 
 				if (activeSorts.length > 0) {
@@ -702,8 +952,11 @@
 						<div class="col-span-2 font-mono text-xs">
 							${durationHTML}
 						</div>
-						<div class="col-span-3 text-sm text-slate-300 break-words whitespace-normal">
-							${asset.desc}
+						<div class="col-span-3 text-sm text-slate-300 break-words whitespace-normal flex flex-col gap-1">
+							<span>${asset.desc}</span>
+							<div class="flex flex-wrap gap-1 mt-0.5">
+								${asset.tags.map((t) => `<span class="bg-slate-700 text-slate-300 text-[9px] px-1.5 py-0.5 rounded">${t}</span>`).join('')}
+							</div>
 						</div>
 						<div class="col-span-2 text-[11px] text-slate-400 font-mono tracking-tighter">
 							${asset.displayDate}
@@ -764,6 +1017,11 @@
 							document.getElementById('inputEndTime').value =
 								assetToEdit.rawEndTime || '';
 							document.getElementById('inputDesc').value = assetToEdit.desc;
+							formTags = [...assetToEdit.tags];
+							previousType = assetToEdit.type;
+							renderFormTags();
+							localFileToPlay = null;
+							updateFormPlayBtn();
 
 							if (assetToEdit.fileUrl) {
 								document.getElementById('editFileHint').classList.remove('hidden');
@@ -897,6 +1155,7 @@
 
 			function updateUI() {
 				renderSortUI();
+				renderTagFilters();
 				renderList();
 				renderChart();
 			}
@@ -920,10 +1179,282 @@
 				updateUI();
 			}
 
+			const tagBtn = document.getElementById('tagFilterBtn');
+			const tagPopup = document.getElementById('tagFilterPopup');
+			const closePopupBtn = document.getElementById('closeTagPopupBtn');
+
+			// Click nút thì Bật/Tắt Popup
+			tagBtn.addEventListener('click', (e) => {
+				e.stopPropagation(); // Ngăn chặn sự kiện click lan ra ngoài body
+				tagPopup.classList.toggle('hidden');
+			});
+
+			// Click nút ✕ thì Đóng Popup
+			closePopupBtn.addEventListener('click', () => {
+				tagPopup.classList.add('hidden');
+			});
+
+			// Bấm ra ngoài (Click outside) thì Đóng Popup
+			document.addEventListener('click', (e) => {
+				// Nếu popup đang mở, VÀ nơi click không nằm trong popup, VÀ nơi click không phải là cái nút
+				if (
+					!tagPopup.classList.contains('hidden') &&
+					!tagPopup.contains(e.target) &&
+					e.target !== tagBtn
+				) {
+					tagPopup.classList.add('hidden');
+				}
+			});
+
+			// Ngăn popup đóng khi click vào bên trong (vd: click vào thanh cuộn, click tìm kiếm)
+			tagPopup.addEventListener('click', (e) => {
+				e.stopPropagation();
+			});
+
 			searchInput.addEventListener('input', renderList);
 			filterSelect.addEventListener('change', renderList);
 			durationFilter.addEventListener('change', renderList);
 			cancelEditBtn.addEventListener('click', resetForm);
+
+			document.getElementById('searchTagFilter').addEventListener('input', renderTagFilters);
+			// ===============================================
+			// LOGIC POP-UP TAGS Ở FORM (THÊM / SỬA)
+			// ===============================================
+			const openFormTagPopupBtn = document.getElementById('openFormTagPopupBtn');
+			const formTagPopup = document.getElementById('formTagPopup');
+			const searchFormTag = document.getElementById('searchFormTag');
+			const cancelFormTagsBtn = document.getElementById('cancelFormTagsBtn');
+			const applyFormTagsBtn = document.getElementById('applyFormTagsBtn');
+
+			openFormTagPopupBtn.addEventListener('click', (e) => {
+				e.stopPropagation();
+
+				// Tính toán tọa độ của nút bấm để đặt Pop-up ngay bên phải nó
+				const btnRect = openFormTagPopupBtn.getBoundingClientRect();
+				formTagPopup.style.top = btnRect.top - 350 + 'px';
+				formTagPopup.style.left = btnRect.right + 12 + 'px'; // +12px để cách nút bấm 1 khoảng nhỏ
+
+				tempFormTags = [...formTags]; // Copy tags hiện tại làm nháp
+				searchFormTag.value = ''; // Xóa ô tìm kiếm
+				renderFormPopupTags();
+				formTagPopup.classList.remove('hidden');
+			});
+
+			cancelFormTagsBtn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				formTagPopup.classList.add('hidden'); // Hủy thì đóng thẳng, không lưu
+			});
+
+			applyFormTagsBtn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				formTags = [...tempFormTags]; // Ghi đè nháp ra form chính
+				renderFormTags();
+				formTagPopup.classList.add('hidden');
+			});
+
+			// Đóng pop-up nếu click ra ngoài
+			document.addEventListener('click', (e) => {
+				if (
+					!formTagPopup.classList.contains('hidden') &&
+					!formTagPopup.contains(e.target) &&
+					e.target !== openFormTagPopupBtn
+				) {
+					formTagPopup.classList.add('hidden');
+				}
+			});
+
+			formTagPopup.addEventListener('click', (e) => e.stopPropagation());
+			searchFormTag.addEventListener('input', renderFormPopupTags);
+
+			function renderFormPopupTags() {
+				const container = document.getElementById('formPopupTagsList');
+				const searchVal = searchFormTag.value.trim().toLowerCase();
+
+				// Tập hợp mọi tags từ DB và từ nháp
+				allAvailableTags.clear();
+				memoryAssets.forEach((a) => a.tags.forEach((t) => allAvailableTags.add(t)));
+				tempFormTags.forEach((t) => allAvailableTags.add(t));
+				formTags.forEach((t) => allAvailableTags.add(t));
+
+				let tagsArray = Array.from(allAvailableTags);
+				let html = '';
+
+				if (searchVal) {
+					let filtered = tagsArray.filter((t) => t.toLowerCase().includes(searchVal));
+					// Nếu searchVal không có tag nào giống y hệt, hiện nút "Tạo mới"
+					if (!filtered.some((t) => t.toLowerCase() === searchVal)) {
+						html += `<button type="button" onclick="window.toggleTempFormTag('${searchFormTag.value.trim()}')" class="text-[11px] px-2 py-1.5 rounded border border-dashed border-emerald-500 bg-emerald-900/30 text-emerald-300 hover:bg-emerald-800/50 flex items-center gap-1 w-full justify-center mb-1.5 font-bold transition-colors">
+							➕ Tạo tag mới: "${searchFormTag.value.trim()}"
+						</button>`;
+					}
+					tagsArray = filtered;
+				}
+
+				html += tagsArray
+					.map((tag) => {
+						const isActive = tempFormTags.includes(tag);
+						const bgClass = isActive
+							? 'bg-praccent text-white border-blue-400'
+							: 'bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700';
+
+						return `
+					<div class="flex items-center rounded border transition-colors ${bgClass} overflow-hidden shadow-sm">
+						<button type="button" onclick="window.toggleTempFormTag('${tag}')" class="text-[11px] px-2 py-1 h-full">${tag}</button>
+						<button type="button" onclick="window.confirmDeleteTag('${tag}', event)" class="px-1.5 py-1 text-[10px] bg-black/20 hover:bg-red-600 hover:text-white border-l border-black/10 transition-colors h-full" title="Xóa tag này">✕</button>
+					</div>
+					`;
+					})
+					.join('');
+
+				container.innerHTML = html;
+			}
+
+			window.toggleTempFormTag = function (tag) {
+				const idx = tempFormTags.indexOf(tag);
+				if (idx > -1) tempFormTags.splice(idx, 1);
+				else tempFormTags.push(tag);
+
+				// Reset ô search nếu vừa tạo tag thành công
+				if (searchFormTag.value.trim() === tag) searchFormTag.value = '';
+				renderFormPopupTags();
+			};
+
+			// ===============================================
+			// LOGIC XÓA TAG VĨNH VIỄN KHỎI DATABASE
+			// ===============================================
+			window.confirmDeleteTag = function (tag, e) {
+				e.stopPropagation();
+				tagToDelete = tag;
+				document.getElementById('tagToDeleteName').textContent = tag;
+				document.getElementById('deleteTagModal').classList.remove('hidden');
+			};
+
+			document.getElementById('cancelDeleteTagBtn').addEventListener('click', () => {
+				document.getElementById('deleteTagModal').classList.add('hidden');
+				tagToDelete = null;
+			});
+
+			document.getElementById('confirmDeleteTagBtn').addEventListener('click', async () => {
+				if (!tagToDelete || !currentUser) return;
+				const btn = document.getElementById('confirmDeleteTagBtn');
+				btn.innerHTML = 'Đang xóa...';
+				btn.disabled = true;
+
+				try {
+					const updatePromises = [];
+					memoryAssets.forEach((asset) => {
+						if (asset.tags.includes(tagToDelete)) {
+							const newTags = asset.tags.filter((t) => t !== tagToDelete);
+							const docRef = doc(
+								db,
+								'artifacts',
+								appId,
+								'public',
+								'data',
+								'assets',
+								asset.id,
+							);
+							// Promise.all giúp xử lý cực nhanh dù có cả ngàn tài liệu
+							updatePromises.push(updateDoc(docRef, { tags: newTags }));
+						}
+					});
+					await Promise.all(updatePromises);
+
+					// Dọn dẹp state nội bộ ngay lập tức để UI không bị vỡ chờ reload
+					if (formTags.includes(tagToDelete))
+						formTags.splice(formTags.indexOf(tagToDelete), 1);
+					if (tempFormTags.includes(tagToDelete))
+						tempFormTags.splice(tempFormTags.indexOf(tagToDelete), 1);
+					if (selectedFilterTags.includes(tagToDelete))
+						selectedFilterTags.splice(selectedFilterTags.indexOf(tagToDelete), 1);
+
+					showToast(`Đã xóa thành công tag: ${tagToDelete}`, 'bg-green-600');
+				} catch (err) {
+					showToast('Lỗi khi xóa tag!', 'bg-red-600');
+					console.error(err);
+				} finally {
+					btn.innerHTML = 'Xóa vĩnh viễn';
+					btn.disabled = false;
+					document.getElementById('deleteTagModal').classList.add('hidden');
+					tagToDelete = null;
+					renderFormTags();
+					if (!document.getElementById('formTagPopup').classList.contains('hidden'))
+						renderFormPopupTags();
+					updateUI(); // Render lại filter & list
+				}
+			});
+
+			document.getElementById('inputType').addEventListener('change', (e) => {
+				const newType = e.target.value;
+				const idx = formTags.indexOf(previousType);
+				if (idx > -1) {
+					formTags[idx] = newType; // Cập nhật tag cũ thành tag mới
+				} else if (!formTags.includes(newType)) {
+					formTags.push(newType); // Thêm nếu chưa có
+				}
+				previousType = newType;
+				renderFormTags();
+			});
+
+			document.getElementById('inputFile').addEventListener('change', (e) => {
+				localFileToPlay = e.target.files[0] || null;
+				updateFormPlayBtn();
+			});
+
+			document.getElementById('clearAllTagsBtn').addEventListener('click', () => {
+				selectedFilterTags = []; // Reset mảng về rỗng
+				updateUI(); // Cập nhật lại giao diện
+			});
+
+			document.getElementById('formPlayBtn').addEventListener('click', () => {
+				const btn = document.getElementById('formPlayBtn');
+				let isVideo = false;
+				let urlToPlay = '';
+
+				// Ưu tiên file local nếu vừa chọn
+				if (localFileToPlay) {
+					urlToPlay = URL.createObjectURL(localFileToPlay);
+					isVideo =
+						localFileToPlay.type.startsWith('video/') ||
+						document.getElementById('inputType').value === 'Meme';
+				}
+				// Nếu không có file local, dùng file URL trên mạng của Asset đang edit
+				else if (editingId) {
+					const editAsset = memoryAssets.find((a) => a.id === editingId);
+					urlToPlay = editAsset.fileUrl;
+					isVideo =
+						Boolean(urlToPlay.match(/\.(mp4|webm|mov|mkv)$/i)) ||
+						editAsset.type === 'Meme';
+				}
+
+				if (!urlToPlay) return;
+
+				if (isVideo) {
+					// Tắt audio đang phát nếu có
+					if (window.formAudio) {
+						window.formAudio.pause();
+						btn.innerHTML = '▶ Nghe / Xem thử File';
+					}
+					if (window.currentAudio) window.currentAudio.pause();
+
+					videoPlayer.src = urlToPlay;
+					videoModal.classList.remove('hidden');
+					videoPlayer.play();
+				} else {
+					// Xử lý Audio Local/DB
+					if (window.formAudio && !window.formAudio.paused) {
+						window.formAudio.pause();
+						btn.innerHTML = '▶ Nghe / Xem thử File';
+						return;
+					}
+					if (window.currentAudio) window.currentAudio.pause();
+
+					window.formAudio = new Audio(urlToPlay);
+					window.formAudio.play();
+					btn.innerHTML = '⏸ Dừng';
+					window.formAudio.onended = () => (btn.innerHTML = '▶ Nghe / Xem thử File');
+				}
+			});
 
 			addForm.addEventListener('submit', async (e) => {
 				e.preventDefault();
@@ -1010,6 +1541,7 @@
 							rawEndTime: endTime,
 							desc: desc,
 							fileUrl: currentFileUrl,
+							tags: formTags,
 						});
 						showToast('Đã cập nhật thay đổi!', 'bg-green-600');
 					} else {
@@ -1028,6 +1560,7 @@
 							desc: desc,
 							fileUrl: currentFileUrl,
 							createdAt: Date.now(),
+							tags: formTags,
 						});
 						showToast('Đã thêm dữ liệu và File đính kèm lên DB!', 'bg-green-600');
 					}
